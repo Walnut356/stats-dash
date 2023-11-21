@@ -1,0 +1,32 @@
+[package]
+name = "stats-dash"
+version = "0.1.0"
+authors = ["Walnut <39544927+Walnut356@users.noreply.github.com>"]
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+dioxus-desktop = { version = "0.4" }
+dioxus = { version = "0.4" }
+
+dioxus-router = { version = "0.4" }
+slpprocess = {path = "..\\SlpProcess\\slpprocess"}
+
+# Debug
+log = "0.4.19"
+dioxus-logger = "0.4.1"
+
+polars = { version = "0.35.2", features = [
+    "lazy",
+    "dtype-u16",
+    "dtype-u8",
+    "dtype-i8",
+    "dtype-struct",
+    "dtype-datetime",
+    "dtype-duration",
+] }
+
+[features]
+bundle = []
