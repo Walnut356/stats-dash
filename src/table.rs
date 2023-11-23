@@ -15,12 +15,19 @@ pub fn DFTable(cx: Scope, dataframe: DataFrame) -> Element {
     let column_names = dataframe.get_column_names();
     let columns = dataframe.get_columns();
     render!(
-        table { padding: "10px", role: "grid",
+        table { padding: "10px", role: "grid", width: "auto",
             tr {
                 for name in column_names {
-                    th { "{name}" }
+                    th {
+                        scope: "col",
+                        b{
+                            font_size: "16px",
+                            "{name}"
+                        }
+                    }
                 }
             }
+            tbody {
             for i in 0..height {
                 tr {
                     for column in columns {
@@ -50,6 +57,7 @@ pub fn DFTable(cx: Scope, dataframe: DataFrame) -> Element {
                 }
             }
         }
+    }
     )
 }
 
@@ -69,15 +77,7 @@ pub fn anyval_to_string(val: &datatypes::AnyValue) -> String {
             let mut buf = Vec::new();
             val._materialize_struct_av(&mut buf);
             for (field, data) in zip(c.iter(), buf.iter()) {
-                match data {
-                    datatypes::AnyValue::Float32(x) => {
-                        temp.push_str(&format!("{}: {:.2}, ", field.name, x))
-                    }
-                    datatypes::AnyValue::Float64(x) => {
-                        temp.push_str(&format!("{}: {:.2}, ", field.name, x))
-                    }
-                    _ => temp.push_str(&format!("{}: {}, ", field.name, anyval_to_string(data))),
-                }
+                temp.push_str(&format!("{}: {}, ", field.name, anyval_to_string(data)));
             }
             temp = temp[0..temp.len() - 2].to_string();
             temp.push('}');
@@ -102,6 +102,10 @@ pub fn anyval_to_string(val: &datatypes::AnyValue) -> String {
 
         // it's a little dumb, but this results in printing 'String' instead of '"String"'
         datatypes::AnyValue::Utf8(x) => x.to_string(),
+
+        datatypes::AnyValue::Datetime(x, y, z) => {
+            chrono::DateTime::<chrono::FixedOffset>::from_naive_utc_and_offset(chrono::naive::NaiveDateTime::from_timestamp_micros(x / 1000).unwrap(), chrono::offset::FixedOffset::from_str(z.as_ref().unwrap()).unwrap()).to_string()
+        },
 
         _ => val.to_string(),
     }

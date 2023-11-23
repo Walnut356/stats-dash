@@ -11,7 +11,7 @@ default_platform = "desktop"
 out_dir = "dist"
 
 # resource (public) file folder
-asset_dir = "public"
+asset_dir = "assets"
 
 [web.app]
 
@@ -24,13 +24,13 @@ title = "Slippi Stats Dash"
 reload_html = true
 
 # which files or dirs will be watcher monitoring
-watch_path = ["src", "public"]
+watch_path = ["./src", "./assets"]
 
 # include `assets` in web platform
 [web.resource]
 
 # CSS style file
-style = ["./public/pico-1.5.9/css/pico.min.css"]
+style = ["./dist/pico-1.5.9/css/pico.min.css"]
 
 # Javascript code file
 script = []
@@ -40,3 +40,7 @@ script = []
 # Javascript code file
 # serve: [dev-server] only
 script = []
+style = ["./dist/pico-1.5.9/css/pico.min.css"]
+
+[bundle]
+resources = ["./dist/pico-1.5.9"]

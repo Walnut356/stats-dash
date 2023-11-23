@@ -26,6 +26,12 @@ pub enum Route {
     Table { path: String },
 }
 
+fn Header(cx: Scope) -> Element {
+    cx.render(rsx! {
+        head { link { rel: "stylesheet", href: "./dist/pico-1.5.9/css/pico.classless.min.css" } }
+    })
+}
+
 #[inline_props]
 pub fn Table(cx: Scope, path: String) -> Element {
     render! {"eef"}
@@ -84,7 +90,6 @@ pub fn Home(cx: Scope) -> Element {
 
             if game.read().is_some() {
                 cx.render(rsx!(
-                    p { "{PathBuf::from_str(path.read().as_str()).unwrap().file_name().unwrap():?}" }
                     DFTable { dataframe: game.read().as_ref().unwrap().summarize() }
                 ))
 
@@ -104,18 +109,18 @@ pub fn Home(cx: Scope) -> Element {
                                 let port = game.read().as_ref().unwrap().players[0].port;
                                 if **port_selection != port {
                                     port_selection.set(port);
-                                df.set(
-                                    game
-                                        .read()
-                                        .as_ref()
-                                        .unwrap()
-                                        .player_by_port(port)
-                                        .unwrap()
-                                        .stats
-                                        .get(*stat_type.read())
-                                        .unwrap(),
-                                );
-                            }
+                                    df.set(
+                                        game
+                                            .read()
+                                            .as_ref()
+                                            .unwrap()
+                                            .player_by_port(port)
+                                            .unwrap()
+                                            .stats
+                                            .get(*stat_type.read())
+                                            .unwrap(),
+                                    );
+                                }
                             }
                         }
                     }
@@ -185,11 +190,5 @@ pub fn Home(cx: Scope) -> Element {
         }
 
         DFTable { dataframe: df.read().clone() }
-    })
-}
-
-fn Header(cx: Scope) -> Element {
-    cx.render(rsx! {
-        head { link { rel: "stylesheet", href: "/public/pico-1.5.9/css/pico.min.css" } }
     })
 }

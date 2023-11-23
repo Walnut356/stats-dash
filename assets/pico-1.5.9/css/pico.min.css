@@ -1695,7 +1695,7 @@ input:not([type=checkbox], [type=radio], [type=range], [type=file])[type=search]
 }
 
 :where(table) {
-    width: 100%;
+    /* width: 100%; */
     border-collapse: collapse;
     border-spacing: 0;
     text-indent: 0
@@ -1709,7 +1709,7 @@ th {
     border: var(--border-width) solid var(--table-border-color);
     color: var(--color);
     font-weight: var(--font-weight);
-    font-size: 12px;
+    font-size: 14px;
     text-align: left;
     text-align: start;
     font-family: monospace;
