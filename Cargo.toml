@@ -29,5 +29,6 @@ polars = { version = "0.35.2", features = [
     "dtype-datetime",
     "dtype-duration",
 ] }
-chrono = "0.4.31"
-chrono-tz = "0.8.4"
+
+[profile.release]
+lto = true

@@ -91,13 +91,13 @@ pub fn anyval_to_string(val: &datatypes::AnyValue) -> String {
         // it's a little dumb, but this results in printing 'String' instead of '"String"'
         datatypes::AnyValue::Utf8(x) => x.to_string(),
 
-        datatypes::AnyValue::Datetime(x, y, z) => {
-            chrono::DateTime::<chrono::FixedOffset>::from_naive_utc_and_offset(
-                chrono::naive::NaiveDateTime::from_timestamp_micros(x / 1000).unwrap(),
-                chrono::offset::FixedOffset::from_str(z.as_ref().unwrap()).unwrap(),
-            )
-            .to_string()
-        }
+        // datatypes::AnyValue::Datetime(x, y, z) => {
+        //     chrono::DateTime::<chrono::FixedOffset>::from_naive_utc_and_offset(
+        //         chrono::naive::NaiveDateTime::from_timestamp_micros(x / 1000).unwrap(),
+        //         chrono::offset::FixedOffset::from_str(z.as_ref().unwrap()).unwrap(),
+        //     )
+        //     .to_string()
+        // }
 
         _ => val.to_string(),
     }
