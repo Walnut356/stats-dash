@@ -189,7 +189,7 @@ tfoot td,
 tfoot th,
 thead td,
 thead th {
-    --border-width: 3px
+    --border-width: 1px
 }
 
 :not(thead, tfoot)>*>td {
@@ -558,9 +558,9 @@ body>footer,
 body>header,
 body>main {
     width: 100%;
-    margin-right: auto;
-    margin-left: auto;
-    padding: var(--block-spacing-vertical) var(--block-spacing-horizontal)
+    margin-right: 5rem;
+    margin-left: 5rem;
+    padding: var(1rem) var(--block-spacing-horizontal)
 }
 
 @media (min-width:576px) {
@@ -606,10 +606,10 @@ section {
 }
 
 figure {
-    display: block;
+    /* display: block; */
     margin: 0;
     padding: 0;
-    overflow-x: auto
+    overflow: auto;
 }
 
 figure figcaption {
@@ -649,7 +649,7 @@ pre,
 table,
 ul {
     margin-top: 0;
-    margin-bottom: var(--typography-spacing-vertical);
+    /* margin-bottom: var(--typography-spacing-vertical); */
     color: var(--color);
     font-style: normal;
     font-weight: var(--font-weight);
@@ -1359,7 +1359,7 @@ input:not([type=checkbox], [type=radio], [type=range], [type=file])[type=time] {
 
 [type=file] {
     --color: var(--muted-color);
-    padding: calc(var(--form-element-spacing-vertical) * .5) 0;
+    /* padding: calc(var(--form-element-spacing-vertical) * .5) 0; */
     border: 0;
     border-radius: 0;
     background: 0 0
@@ -1591,16 +1591,14 @@ input:not([type=checkbox], [type=radio], [type=range], [type=file])[type=search]
 
 :where(table) {
     /* width: 100%; */
-    border-collapse: collapse;
+    border-collapse: separate;
     border-spacing: 0;
     text-indent: 0
 }
 
-td,
-th {
-    /* padding: calc(var(--spacing)/ 2) var(--spacing); */
-    padding-left: calc(var(--spacing) / 2);
-    padding-right: calc(var(--spacing) / 2);
+td {
+    padding-left: calc(var(--spacing)/ 2);
+    padding-right: calc(var(--spacing)/ 2);
     border: var(--border-width) solid var(--table-border-color);
     color: var(--color);
     font-weight: var(--font-weight);
@@ -1610,13 +1608,29 @@ th {
     font-family: monospace;
 }
 
+th {
+    padding-left: calc(var(--spacing)/ 2);
+    padding-right: calc(var(--spacing)/ 2);
+    padding-top: 0;
+    padding-bottom: 0;
+    border: 1px solid var(--table-border-color);
+    color: var(--color);
+    font-weight: var(--font-weight);
+    font-size: 16px;
+    text-align: left;
+    text-align: start;
+    font-family: monospace;
+    border-width: 1px;
+    background-color: var(--background-color);
+}
+
 tfoot td,
 tfoot th {
     border-top: var(--border-width) solid var(--table-border-color);
     border-bottom: 0
 }
 
-table[role=grid] tbody tr:nth-child(odd) {
+table[role=grid] tbody tr:nth-child(even) {
     background-color: var(--table-row-stripped-background-color)
 }
 
@@ -1908,7 +1922,8 @@ nav ul {
 }
 
 nav {
-    justify-content: space-between
+    justify-content: space-evenly;
+    align-items: baseline;
 }
 
 nav ol,
@@ -2308,7 +2323,9 @@ input[type=submit][aria-busy=true] {
 }
 
 [data-tooltip] {
-    position: relative
+    position: relative;
+    text-wrap: wrap;
+    max-width: 150em;
 }
 
 [data-tooltip]:not(a, button, input) {
@@ -2321,13 +2338,13 @@ input[type=submit][aria-busy=true] {
 [data-tooltip]::before,
 [data-tooltip][data-placement=top]::after,
 [data-tooltip][data-placement=top]::before {
-    display: block;
+    /* display: block; */
     z-index: 99;
     position: absolute;
     bottom: 100%;
     left: 50%;
     padding: .25rem .5rem;
-    overflow: hidden;
+    /* overflow: hidden; */
     transform: translate(-50%, -.25rem);
     border-radius: var(--border-radius);
     background: var(--tooltip-background-color);
@@ -2337,8 +2354,8 @@ input[type=submit][aria-busy=true] {
     font-weight: var(--font-weight);
     font-size: .875rem;
     text-decoration: none;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    /* text-overflow: ellipsis; */
+    white-space: pre;
     opacity: 0;
     pointer-events: none
 }

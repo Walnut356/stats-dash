@@ -1,10 +1,14 @@
 #![allow(non_snake_case)]
 
 mod table;
+use slpprocess::player::Player;
+use slpprocess::Game;
 use table::*;
+mod top_bar;
+use top_bar::*;
 
-use std::{iter::zip, path::PathBuf};
 use std::str::FromStr;
+use std::{iter::zip, path::PathBuf};
 
 use dioxus_router::prelude::*;
 
@@ -26,12 +30,6 @@ pub enum Route {
     Table { path: String },
 }
 
-fn Header(cx: Scope) -> Element {
-    cx.render(rsx! {
-        head { link { rel: "stylesheet", href: "./dist/pico-1.5.9/css/pico.classless.min.css" } }
-    })
-}
-
 #[inline_props]
 pub fn Table(cx: Scope, path: String) -> Element {
     render! {"eef"}
@@ -39,156 +37,86 @@ pub fn Table(cx: Scope, path: String) -> Element {
 
 #[inline_props]
 pub fn Home(cx: Scope) -> Element {
-    let connect_code = use_ref(cx, String::default);
-    let game: &UseRef<Option<slpprocess::Game>> = use_ref(cx, || None);
-    let df = use_ref(cx, DataFrame::default);
-    let stat_type = use_ref(cx, || StatType::Defense);
-    let path = use_ref(cx, String::default);
-    let match_id = use_ref(cx, String::default);
-    let players = use_ref(cx, Vec::<String>::new);
-    let port_selection = use_state(cx, || Port::P1);
-
-    let regex = r"\w{1,4}#\d{1,3}";
+    let games: &UseRef<Option<Vec<Game>>> = use_ref(cx, || None);
+    let port: &UseRef<Port> = use_ref(cx, || Port::P1);
+    let stat_type: &UseRef<StatType> = use_ref(cx, || StatType::Defense);
 
     cx.render(rsx! {
-        Header {}
-        body {
-            input {
-                // tell the input to pick a file
-                r#type: "file",
-                // list the accepted extensions
-                accept: ".slp",
-                // pick multiple files
-                multiple: false,
-                onchange: |ev| {
-                    if let Some(file_engine) = &ev.files {
-                        let files = file_engine.files();
-                        if !files.is_empty() {
-                            path.set(files[0].clone());
-                            let temp = parse(&files[0]).pop().unwrap();
-                            match_id.set(temp.metadata.match_id.clone().unwrap_or_default());
-                            players
-                                .set(
-                                    vec![
-                                        temp.players[0].connect_code.clone().unwrap_or_default(),
-                                        temp.players[1].connect_code.clone().unwrap_or_default(),
-                                    ],
-                                );
-                            df.set(
-                                temp
-                                    .player_by_port(**port_selection)
-                                    .unwrap()
-                                    .stats
-                                    .get(*stat_type.read())
-                                    .unwrap(),
-                            );
-                            game.set(Some(temp));
+        head { link { rel: "stylesheet", href: "./dist/pico.classless.min.css" } }
+
+        body { margin: 0, padding: "10px", max_height: "100vh",
+            div { display: "flex", flex_direction: "column", max_height: "calc(100dvh - 17px)",
+                TopBar { games: games, port: port, stat_type: stat_type }
+                if games.read().is_some() {
+                    rsx!(
+                        p {
+                            padding_bottom: 0,
+                            margin_bottom: 0,
+                            "Game Info:"
                         }
-                    }
-                }
-            }
-
-            if game.read().is_some() {
-                cx.render(rsx!(
-                    DFTable { dataframe: game.read().as_ref().unwrap().summarize() }
-                ))
-
-            }
-
-            fieldset {
-                legend { "Select a player to view stats:" }
-                div {
-                    input {
-                        value: "1",
-                        r#type: "radio",
-                        name: "port_radio",
-                        checked: "true",
-                        id: "player_1",
-                        onclick: |ev| {
-                            if game.read().is_some() {
-                                let port = game.read().as_ref().unwrap().players[0].port;
-                                if **port_selection != port {
-                                    port_selection.set(port);
-                                    df.set(
-                                        game
-                                            .read()
-                                            .as_ref()
-                                            .unwrap()
-                                            .player_by_port(port)
-                                            .unwrap()
-                                            .stats
-                                            .get(*stat_type.read())
-                                            .unwrap(),
-                                    );
-                                }
-                            }
+                        figure {
+                            overflow: "auto",
+                            flex: "1 0 auto",
+                        DFTable{ dataframe: games.read().as_ref().unwrap().get(0).unwrap().summarize() }
                         }
-                    }
-                    // ew rust please
-                    label { r#for: "player_1",
-                        r#"{players.read().get(0).map(|x| x.as_str()).unwrap_or_else(|| "Player 1")}"#
-                    }
-                }
 
-                div {
-                    input {
-                        r#type: "radio",
-                        value: "2",
-                        name: "port_radio",
-                        id: "player_2",
-                        onclick: |ev| {
-                            if game.read().is_some() {
-                                let port = game.read().as_ref().unwrap().players[1].port;
-                                if **port_selection != port {
-                                    port_selection.set(port);
-                                    df.set(
-                                        game
-                                            .read()
-                                            .as_ref()
-                                            .unwrap()
-                                            .player_by_port(port)
-                                            .unwrap()
-                                            .stats
-                                            .get(*stat_type.read())
-                                            .unwrap(),
-                                    );
-                                }
-                            }
-                            println!("DF changed")
+                        p {
+                            padding_bottom: 0,
+                            margin_bottom: 0,
+                            "Summary:"
                         }
-                    }
-
-                    label { r#for: "player_2",
-                        r#"{players.read().get(1).map(|x| x.as_str()).unwrap_or_else(|| "Player 2")}"#
-                    }
-                }
-            }
-
-            select {
-                onchange: move |ev| {
-                    stat_type.set(StatType::from_str(&ev.value).unwrap());
-                    if game.read().is_some() {
-                        df.set(
-                            game
+                        figure {
+                            bottom: 0,
+                            overflow: "auto",
+                            flex: "1 0 auto",
+                            margin: 0,
+                            padding: 0,
+                            // max_height: "50vh",
+                            DFTable{ dataframe: games
                                 .read()
                                 .as_ref()
                                 .unwrap()
-                                .player_by_port(**port_selection)
+                                .get(0)
+                                .unwrap()
+                                .player_by_port(*port.read())
                                 .unwrap()
                                 .stats
-                                .get(StatType::from_str(&ev.value).unwrap())
-                                .unwrap(),
-                        );
-                    }
-                },
-                option { "Defense" }
-                option { "Wavedash" }
-                option { "Input" }
-                option { "L Cancel" }
-                option { "Item" }
+                                .get_summary(*stat_type.read())
+                                .unwrap_or_default()
+                            }
+                        }
+
+                        if ![StatType::Input, StatType::Item].contains(&stat_type.read()) {
+                            rsx!(
+                                p {
+                                padding_bottom: 0,
+                                margin_bottom: 0,
+                                "Events:"
+                                }
+                                figure {
+                                    bottom: 0,
+                                    overflow: "auto",
+                                    flex: "1 1 auto",
+                                    margin: 0,
+                                    padding: 0,
+                                    // max_height: "50vh",
+                                    DFTable{ dataframe: games
+                                        .read()
+                                        .as_ref()
+                                        .unwrap()
+                                        .get(0)
+                                        .unwrap()
+                                        .player_by_port(*port.read())
+                                        .unwrap()
+                                        .stats
+                                        .get(*stat_type.read())
+                                        .unwrap()
+                                    }
+                                }
+                            )
+                        }
+                    )}
             }
         }
-
-        DFTable { dataframe: df.read().clone() }
     })
 }
