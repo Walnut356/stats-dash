@@ -18,11 +18,13 @@ fn main() {
     // Init debug
 
     dioxus_logger::init(LevelFilter::Info).expect("failed to init logger");
+
     dioxus_desktop::launch_cfg(
         app,
         Config::new()
             .with_resource_directory("./dist/")
             .with_data_directory("./dist/")
             .with_window(WindowBuilder::new().with_title("Stats Dash"))
+            .with_background_color((17, 25, 31, 1))
     );
 }

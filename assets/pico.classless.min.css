@@ -1630,9 +1630,14 @@ tfoot th {
     border-bottom: 0
 }
 
+tr:hover {
+    background-color: var(--primary-focus) !important;
+}
+
 table[role=grid] tbody tr:nth-child(even) {
     background-color: var(--table-row-stripped-background-color)
 }
+
 
 code,
 kbd,

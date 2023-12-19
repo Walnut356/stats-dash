@@ -1,19 +1,16 @@
 use std::iter::zip;
-use std::str::FromStr;
-
-use dioxus_router::prelude::*;
 
 use dioxus::prelude::*;
-use log::LevelFilter;
 
 use polars::prelude::*;
-use slpprocess::{parse, stats::StatType};
 
 #[inline_props]
 pub fn DFTable(cx: Scope, dataframe: DataFrame) -> Element {
     let height = dataframe.height();
     let column_names = dataframe.get_column_names();
     let columns = dataframe.get_columns();
+    let selected = use_state(cx, || usize::MAX);
+    let highlighted = "rgba(16, 149, 193, 0.125)";
     cx.render(rsx!(
         table {  role: "grid", margin: 0, padding: 0,
             thead {
@@ -34,6 +31,15 @@ pub fn DFTable(cx: Scope, dataframe: DataFrame) -> Element {
             tbody {
                 for i in 0..height {
                     tr {
+                        id: "{i}",
+                        background_color: "{(*selected == i).then(|| highlighted).unwrap_or(\"#11191f\")} ",
+                        onclick: move |evt| {
+                            if *selected == i {
+                                selected.set(usize::MAX);
+                            } else {
+                                selected.set(i);
+                            }
+                        },
                         for column in columns {
                             td { text_wrap: "nowrap",
                                 {
@@ -88,9 +94,13 @@ pub fn anyval_to_string(val: &datatypes::AnyValue) -> String {
             }
         }
 
-        // it's a little dumb, but this results in printing 'String' instead of '"String"'
+        // it's a little dumb, but this results in printing String instead of "String"
         datatypes::AnyValue::Utf8(x) => x.to_string(),
-
+        datatypes::AnyValue::Null => "N/A".to_string(),
+        datatypes::AnyValue::Boolean(x) => match x {
+            true => "✓".to_string(),
+            false => "X".to_string(),
+        }
         // datatypes::AnyValue::Datetime(x, y, z) => {
         //     chrono::DateTime::<chrono::FixedOffset>::from_naive_utc_and_offset(
         //         chrono::naive::NaiveDateTime::from_timestamp_micros(x / 1000).unwrap(),
@@ -98,7 +108,6 @@ pub fn anyval_to_string(val: &datatypes::AnyValue) -> String {
         //     )
         //     .to_string()
         // }
-
         _ => val.to_string(),
     }
 }

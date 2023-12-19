@@ -28,7 +28,12 @@ polars = { version = "0.35.2", features = [
     "dtype-struct",
     "dtype-datetime",
     "dtype-duration",
+    "rows",
+    "mode",
+    "is_in",
+    "list_count"
 ] }
+time = {version = "0.3.30", features = ["serde", "parsing", "local-offset"]}
 
 [profile.release]
 lto = true
