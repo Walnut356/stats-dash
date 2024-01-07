@@ -11,8 +11,8 @@ edition = "2021"
 dioxus-desktop = { version = "0.4" }
 dioxus = { version = "0.4" }
 dioxus-ssr = "0.4"
-
 dioxus-router = { version = "0.4" }
+
 slpprocess = {path = "..\\SlpProcess\\slpprocess"}
 ssbm_utils = {path = "..\\SlpProcess\\ssbm-utils"}
 
@@ -34,6 +34,13 @@ polars = { version = "0.35.2", features = [
     "list_count"
 ] }
 time = {version = "0.3.30", features = ["serde", "parsing", "local-offset"]}
+rayon = "1.7.0"
+tokio = "1.28"
+futures-util = "0.3.29"
+wry = "^0.28.0"
+tao = "0.19.1"
+counter = "0.5.7"
+
 
 [profile.release]
 lto = true

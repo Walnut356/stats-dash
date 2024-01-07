@@ -4,55 +4,60 @@ use dioxus::prelude::*;
 
 use polars::prelude::*;
 
-#[inline_props]
+#[component(no_case_check)]
 pub fn DFTable(cx: Scope, dataframe: DataFrame) -> Element {
     let height = dataframe.height();
     let column_names = dataframe.get_column_names();
     let columns = dataframe.get_columns();
     let selected = use_state(cx, || usize::MAX);
-    let highlighted = "rgba(16, 149, 193, 0.125)";
-    cx.render(rsx!(
-        table {  role: "grid", margin: 0, padding: 0,
-            thead {
-                tr {
-                    for name in column_names {
-                        th {
-                            scope: "col",
-                            position: "sticky",
-                            top: "0",
-                            b{
-                                font_size: "16px",
-                                "{name}"
+    let highlighted = "#442a20";
+    render!(
+            table {  class: "border stripes", margin: 0, padding: 0,
+                thead { class: "fixed",
+                    tr {
+                        for name in column_names {
+                            th {
+                                scope: "col",
+                                position: "sticky",
+                                top: "0",
+                                    b{
+                                        font_size: "16px",
+                                        "{name}",
+                                        div { class: "tooltip bottom",
+                                        "eef"
+                                    }
+                                    }
+
                             }
                         }
                     }
                 }
-            }
-            tbody {
-                for i in 0..height {
-                    tr {
-                        id: "{i}",
-                        background_color: "{(*selected == i).then(|| highlighted).unwrap_or(\"#11191f\")} ",
-                        onclick: move |evt| {
-                            if *selected == i {
-                                selected.set(usize::MAX);
-                            } else {
-                                selected.set(i);
-                            }
-                        },
-                        for column in columns {
-                            td { text_wrap: "nowrap",
-                                {
-                                    let val = column.get(i).unwrap();
-                                    anyval_to_string(&val)
+                tbody {
+                    for i in 0..height {
+                        tr {
+                            id: "{i}",
+                            background_color: "{
+                                (*selected == i).then(|| highlighted).unwrap_or_else(|| (i & 1 == 0).then_some(\"rgb(255 255 255 / .00)\").unwrap_or(\"rgb(255 255 255 / .05)\"))} ",
+                            onclick: move |evt| {
+                                if *selected == i {
+                                    selected.set(usize::MAX);
+                                } else {
+                                    selected.set(i);
+                                }
+                            },
+                            for column in columns {
+                                td { text_wrap: "nowrap",
+                                    {
+                                        let val = column.get(i).unwrap();
+                                        anyval_to_string(&val)
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
         }
-    ))
+    )
 }
 
 /// **Recursive**
@@ -67,14 +72,14 @@ pub fn anyval_to_string(val: &datatypes::AnyValue) -> String {
 
         // handle nested data
         datatypes::AnyValue::Struct(_, _, c) => {
-            let mut temp = "{".to_string();
+            let mut temp = "".to_string();
             let mut buf = Vec::new();
             val._materialize_struct_av(&mut buf);
             for (field, data) in zip(c.iter(), buf.iter()) {
-                temp.push_str(&format!("{}: {}, ", field.name, anyval_to_string(data)));
+                temp.push_str(&format!("{}: {}, ", field.name.to_uppercase(), anyval_to_string(data)));
             }
             temp = temp[0..temp.len() - 2].to_string();
-            temp.push('}');
+            // temp.push('}');
 
             temp
         }
@@ -100,7 +105,7 @@ pub fn anyval_to_string(val: &datatypes::AnyValue) -> String {
         datatypes::AnyValue::Boolean(x) => match x {
             true => "✓".to_string(),
             false => "X".to_string(),
-        }
+        },
         // datatypes::AnyValue::Datetime(x, y, z) => {
         //     chrono::DateTime::<chrono::FixedOffset>::from_naive_utc_and_offset(
         //         chrono::naive::NaiveDateTime::from_timestamp_micros(x / 1000).unwrap(),

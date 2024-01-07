@@ -24,13 +24,13 @@ title = "Slippi Stats Dash"
 reload_html = true
 
 # which files or dirs will be watcher monitoring
-watch_path = ["./src", "./assets"]
+# watch_path = ["./src", "./assets"]
 
 # include `assets` in web platform
 [web.resource]
 
 # CSS style file
-style = ["./dist/pico-1.5.9/css/pico.min.css"]
+style = ["./assets/beer.min.css"]
 
 # Javascript code file
 script = []
@@ -40,7 +40,7 @@ script = []
 # Javascript code file
 # serve: [dev-server] only
 script = []
-style = ["./dist/pico-1.5.9/css/pico.min.css"]
+style = ["./assets/beer.min.css"]
 
 [bundle]
-resources = ["./dist/pico-1.5.9"]
+resources = ["./dist/beer.min.css"]

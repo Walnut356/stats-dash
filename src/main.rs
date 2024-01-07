@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use dioxus_desktop::{Config, WindowBuilder, tao::window::Icon};
+use dioxus_desktop::{Config, WindowBuilder, tao::{window::Icon, dpi::Size}, LogicalSize};
 use dioxus_router::prelude::*;
 
 use dioxus::prelude::*;
@@ -10,7 +10,7 @@ use log::LevelFilter;
 use polars::prelude::*;
 use slpprocess::parse;
 
-use stats_dash::*;
+use stats_dash::app::app;
 
 fn main() {
     std::env::set_var("POLARS_FMT_STR_LEN", "200"); // maximum number of characters printed per string value.
@@ -24,7 +24,7 @@ fn main() {
         Config::new()
             .with_resource_directory("./dist/")
             .with_data_directory("./dist/")
-            .with_window(WindowBuilder::new().with_title("Stats Dash"))
-            .with_background_color((17, 25, 31, 1))
+            .with_window(WindowBuilder::new().with_title("Stats Dash").with_inner_size(LogicalSize::new(1200, 700)))
+            .with_background_color((24, 18, 16, 1))
     );
 }

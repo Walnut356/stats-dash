@@ -1,150 +1,88 @@
 #![allow(non_snake_case)]
 
-mod table;
-use slpprocess::game::GameStub;
-use slpprocess::{parse_stubs, Game};
-use table::*;
-mod top_bar;
-use top_bar::*;
-mod cards;
-use cards::*;
+pub mod app;
+pub mod pages {
+    pub mod browse;
+    pub use browse::Browse;
+    pub mod stats;
+    pub use stats::StatsPage;
+}
+pub mod components {
+    pub mod table;
+    pub use table::DFTable;
 
-use std::str::FromStr;
-use std::{iter::zip, path::PathBuf};
+    pub mod top_bar;
+    pub use top_bar::TopBar;
 
-use dioxus_router::prelude::*;
+    pub mod cards;
+    pub use cards::Card;
 
-use dioxus::prelude::*;
-use log::LevelFilter;
+    pub mod head;
+    pub use head::DefaultHead;
 
-use polars::prelude::*;
-use slpprocess::{parse, stats::StatType, Port};
+    pub mod assets;
+    pub use assets::{StockIcon, StageImg};
+}
+pub mod utils;
 
-pub struct WorkingDir(String);
-pub struct Stubs(Vec<GameStub>);
-
-pub fn app(cx: Scope) -> Element {
-    use_shared_state_provider(cx, || WorkingDir("".to_string()));
-    use_shared_state_provider(cx, || Stubs(Vec::<GameStub>::new()));
-    render! { Router::<Route> {} }
+// TODO move this to slpprocess
+#[macro_export]
+macro_rules! static_str {
+    ($x:expr) => {
+        Into::<&'static str>::into($x)
+    }
 }
 
-#[derive(Clone, Routable, Debug, PartialEq)]
-pub enum Route {
-    #[route("/")]
-    Home {},
-    #[route("/stats")]
-    StatsPage {path: Arc<PathBuf>},
-}
 
-#[inline_props]
-pub fn Home(cx: Scope) -> Element {
-    let working_dir = use_shared_state::<WorkingDir>(cx).unwrap();
-    let stubs = use_shared_state::<Stubs>(cx).unwrap();
 
-    cx.render(rsx! {
-        head { link { rel: "stylesheet", href: "./dist/pico.classless.min.css" } }
-        body {margin: 0, padding: "10px",
-            nav { gap: "20px",
-                input {
-                    flex: "0 0 auto",
-                    r#type: "file",
-                    id: "file_input",
-                    directory: true,
-                    overflow: "hidden",
-                    max_width: "6.5rem",
-                    onchange: |evt| {
-                        let fs = evt.files.as_ref().unwrap().files();
-                        let file = &fs.get(0);
-                        if let Some(f) = file {
-                            working_dir.write().0 = f.to_string();
-                            stubs.write().0 = parse_stubs(f, true);
-                        }
-                    }
-                }
-            }
 
-            for stub in &*stubs.read().0 {
-                rsx!(
-                    Card { stub: stub.clone()}
-                )
-            }
-        }
-    })
-}
+// async fn parse_async(path: &str, multithreaded: bool) -> Vec<GameStub> {
+//     if path.is_empty() {
+//         return Vec::new();
+//     }
 
-#[inline_props]
-pub fn StatsPage(cx: Scope, path: Arc<PathBuf>) -> Element {
-    let game = use_ref(cx, || parse(path.to_str().unwrap(), false).pop().unwrap());
-    let port: &UseRef<Port> = use_ref(cx, || Port::P1);
-    let stat_type: &UseRef<StatType> = use_ref(cx, || StatType::Defense);
+//     let f_path = Path::new(path);
+//     if f_path.is_file() {
+//         return vec![Game::stub(f_path).unwrap()];
+//     }
+//     if f_path.is_dir() {
+//         let files: Vec<PathBuf> = fs::read_dir(f_path)
+//             .unwrap()
+//             .filter_map(|file| {
+//                 if let Ok(entry) = file {
+//                     let path = entry.path();
+//                     if path.is_file() && path.extension().unwrap() == "slp" {
+//                         Some(path)
+//                     } else {
+//                         None
+//                     }
+//                 } else {
+//                     None
+//                 }
+//             })
+//             .collect();
 
-    cx.render(rsx! {
-        head { link { rel: "stylesheet", href: "./dist/pico.classless.min.css" } }
+//         let mut result: Vec<GameStub> = if multithreaded {
+//             files
+//                 .par_iter()
+//                 .filter_map(|path| Game::stub(path.as_path()).ok())
+//                 .collect()
+//         } else {
+//             files
+//                 .iter()
+//                 .filter_map(|path| {
+//                     #[cfg(debug_assertions)]
+//                     dbg!(path);
 
-        body { margin: 0, padding: "10px", max_height: "100vh",
-            div { display: "flex", flex_direction: "column", max_height: "calc(100dvh - 17px)",
-                TopBar { players: game.read().players.clone(), port: port, stat_type: stat_type }
+//                     Game::stub(path.as_path()).ok()
+//                 })
+//                 .collect()
+//         };
 
-                rsx!(
-                    p {
-                        padding_bottom: 0,
-                        margin_bottom: 0,
-                        "Game Info:"
-                    }
-                    figure {
-                        overflow: "auto",
-                        flex: "1 0 auto",
-                    DFTable{ dataframe: game.read().summarize() }
-                    }
+//         // sort newest -> oldest by date
+//         result.sort_by(|a,b| b.cmp(a));
 
-                    p {
-                        padding_bottom: 0,
-                        margin_bottom: 0,
-                        "Summary:"
-                    }
-                    figure {
-                        bottom: 0,
-                        overflow: "auto",
-                        flex: "1 0 auto",
-                        margin: 0,
-                        padding: 0,
-                        // max_height: "50vh",
-                        DFTable{ dataframe: game.read()
-                            .player_by_port(*port.read())
-                            .unwrap()
-                            .stats
-                            .get_summary(*stat_type.read())
-                            .unwrap_or_default()
-                        }
-                    }
-
-                    if ![StatType::Input, StatType::Item].contains(&stat_type.read()) {
-                        rsx!(
-                            p {
-                            padding_bottom: 0,
-                            margin_bottom: 0,
-                            "Events:"
-                            }
-                            figure {
-                                bottom: 0,
-                                overflow: "auto",
-                                flex: "1 1 auto",
-                                margin: 0,
-                                padding: 0,
-                                // max_height: "50vh",
-                                DFTable{ dataframe: game.read()
-                                    .player_by_port(*port.read())
-                                    .unwrap()
-                                    .stats
-                                    .get(*stat_type.read())
-                                    .unwrap()
-                                }
-                            }
-                        )
-                    }
-                )
-            }
-        }
-    })
-}
+//         return result;
+//     }
+//     panic!("invalid file path: {f_path:?}")
+// }
