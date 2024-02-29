@@ -2,7 +2,9 @@ WIP stats app for slippi replays based off of my [stats parser](https://github.c
 
 Built using Dioxus and a slightly modified BeerCSS
 
-Special shoutouts to [Waga](https://ssbmtextures.com/other-mod-types/modernized-stock-icons/) for the stock icons
+Special shoutouts to [Waga](https://ssbmtextures.com/other-mod-types/modernized-stock-icons/) for the stock icons.
+
+https://github.com/Walnut356/stats-dash/assets/39544927/888c356f-40ad-429d-9cd6-c968e8605d68
 
 Microsoft Defender false positive
 ---
